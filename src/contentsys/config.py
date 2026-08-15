@@ -130,17 +130,49 @@ class PostingWindow(BaseModel):
     @field_validator("start", "end")
     @classmethod
     def _valid_clock(cls, value: str) -> str:
-        hours, _, minutes = value.partition(":")
-        if not (hours.isdigit() and minutes.isdigit()):
+        """Validate a time of day and return it zero padded.
+
+        Canonicalising here matters. A hand-edited config can easily say
+        "9:00", and everything downstream (ordering, gap checks, slot
+        assignment) would otherwise have to remember that clock strings do not
+        sort the way they look.
+        """
+        hours, separator, minutes = value.partition(":")
+        if not separator or not (hours.isdigit() and minutes.isdigit()):
             raise ValueError(f"expected HH:MM, got {value!r}")
         if not (0 <= int(hours) <= 23 and 0 <= int(minutes) <= 59):
             raise ValueError(f"not a valid time of day: {value!r}")
-        return value
+        return f"{int(hours):02d}:{int(minutes):02d}"
+
+    @staticmethod
+    def _minutes(clock: str) -> int:
+        hours, _, minutes = clock.partition(":")
+        return int(hours) * 60 + int(minutes)
+
+    @property
+    def start_minutes(self) -> int:
+        """Minutes since midnight. The form the scheduler actually wants."""
+        return self._minutes(self.start)
+
+    @property
+    def end_minutes(self) -> int:
+        return self._minutes(self.end)
+
+    @property
+    def duration_minutes(self) -> int:
+        return self.end_minutes - self.start_minutes
 
     @model_validator(mode="after")
     def _ordered(self) -> Self:
-        if self.start >= self.end:
-            raise ValueError(f"window {self.name!r} starts at or after it ends")
+        # Compare elapsed minutes, not strings. Lexical ordering on clock
+        # strings is wrong in both directions once padding is inconsistent:
+        # it rejects a valid 9:00 to 10:30 window and accepts a backwards
+        # 10:00 to 9:00 one.
+        if self.start_minutes >= self.end_minutes:
+            raise ValueError(
+                f"window {self.name!r} starts at {self.start} and ends at {self.end}, "
+                "which is not a forward interval"
+            )
         return self
 
 
