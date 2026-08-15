@@ -217,6 +217,76 @@ def voice_show(
     console.print(table)
 
 
+@app.command("teach")
+def teach(
+    draft: Annotated[Path, typer.Argument(help="File holding the draft as generated")],
+    edited: Annotated[Path, typer.Argument(help="File holding your rewritten version")],
+) -> None:
+    """Learn from how you rewrote a draft.
+
+    A preference is recorded the first time it is seen but not used. It only
+    reaches the prompt once the same change shows up repeatedly, so one
+    unusual edit cannot permanently reshape how everything is written.
+    """
+    from contentsys.voice import ACTIVE_CONFIDENCE, active_preferences, learn_from
+
+    for path in (draft, edited):
+        if not path.exists():
+            console.print(f"[red]No such file:[/red] {path}")
+            raise typer.Exit(1)
+
+    original = draft.read_text(encoding="utf-8")
+    revised = edited.read_text(encoding="utf-8")
+
+    create_all()
+    with session_scope() as session:
+        report = learn_from(session, original, revised)
+        session.flush()
+        preferences = [(p.key, p.description, p.confidence) for p in active_preferences(session)]
+
+    console.print(f"[bold]What changed:[/bold] {report.analysis.summary()}")
+    if report.analysis.unclassified:
+        console.print(
+            "[yellow]The text changed but nothing recognisable did, so nothing was "
+            "learned. This is deliberate: a wrong lesson learned confidently is "
+            "worse than no lesson.[/yellow]"
+        )
+    console.print(f"[bold]Result:[/bold] {report.describe()}")
+
+    if preferences:
+        table = Table(title=f"\nIn use (confidence >= {ACTIVE_CONFIDENCE})")
+        table.add_column("Preference")
+        table.add_column("Seen", justify="right")
+        for _, description, confidence in preferences:
+            table.add_row(description, str(confidence))
+        console.print(table)
+    else:
+        console.print(
+            f"\n[dim]Nothing is confident enough to use yet. A preference needs "
+            f"{ACTIVE_CONFIDENCE} observations before it reaches a prompt.[/dim]"
+        )
+
+
+@app.command("forget")
+def forget_preference(
+    key: Annotated[str, typer.Argument(help="The preference key to drop")],
+) -> None:
+    """Drop a learned preference.
+
+    The system will occasionally learn something wrong, and a voice model with
+    no undo is one nobody will trust enough to keep feeding.
+    """
+    from contentsys.voice import forget
+
+    with session_scope() as session:
+        removed = forget(session, key)
+
+    if removed:
+        console.print(f"[green]Forgot[/green] {key}")
+    else:
+        console.print(f"[yellow]No preference called[/yellow] {key}")
+
+
 @app.command("knowledge")
 def knowledge_summary() -> None:
     """Show what the system knows about you.

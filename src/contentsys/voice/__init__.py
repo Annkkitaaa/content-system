@@ -11,6 +11,15 @@ still sounds like nobody.
 
 from __future__ import annotations
 
+from contentsys.voice.diff import Change, EditAnalysis, analyse_edit, word_diff
+from contentsys.voice.memory import (
+    ACTIVE_CONFIDENCE,
+    LearningReport,
+    active_preferences,
+    forget,
+    learn_from,
+    record_edit,
+)
 from contentsys.voice.profile import (
     MIN_USEFUL_SAMPLES,
     active_profile,
@@ -21,12 +30,22 @@ from contentsys.voice.profile import (
 from contentsys.voice.surface import SurfaceProfile, analyse, compare
 
 __all__ = [
+    "ACTIVE_CONFIDENCE",
     "MIN_USEFUL_SAMPLES",
+    "Change",
+    "EditAnalysis",
+    "LearningReport",
     "SurfaceProfile",
+    "active_preferences",
     "active_profile",
     "analyse",
+    "analyse_edit",
     "build_profile",
     "compare",
+    "forget",
+    "learn_from",
     "load_surface",
+    "record_edit",
     "samples_for",
+    "word_diff",
 ]

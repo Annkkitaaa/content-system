@@ -43,9 +43,9 @@ Under construction, one phase per pull request.
 | 2. Providers, prompts, guarantees | done |
 | 3. Idea and draft engines, the eight modes | done |
 | 4. Diagrams: flowcharts for LinkedIn, visuals for X where they help | next |
-| 5. Evaluation: authenticity, slop, repetition, monetization | planned |
-| 6. Learning from your edits | planned |
-| 7. Scheduling and Excel export (usable MVP) | planned |
+| 5. Evaluation: slop, repetition, monetization, voice | done |
+| 6. Learning from your edits | done |
+| 7. Scheduling and Excel export (usable MVP) | next |
 | 8. Research layer | planned |
 | 9. Dashboard | planned |
 | 10. Performance tracking and platform integration | planned |
@@ -73,6 +73,27 @@ contentsys generate dump "zk confused me for ages then i realised you're not pro
 
 Add `--provider mock` to any of these to see the pipeline run offline and for
 free.
+
+## Teaching it
+
+Rewrite a draft the way you actually wanted it, then show it both versions:
+
+```bash
+contentsys teach draft.txt edited.txt
+```
+
+It works out what changed (shorter, lowercased, hook cut, hedging removed) and
+remembers it. A preference is recorded the first time but not used. It only
+reaches the prompt once the same change appears repeatedly, so one unusual
+edit cannot permanently reshape how everything is written.
+
+Contradicting evidence decays a preference rather than fighting it, which
+means a genuine reversal takes as long to learn as the original did. If it
+ever learns something wrong:
+
+```bash
+contentsys forget prefers_lowercase
+```
 
 ## Install
 
