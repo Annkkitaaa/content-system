@@ -229,6 +229,13 @@ def weekly(
     seed: Annotated[
         int | None, typer.Option("--seed", help="Make the calendar reproducible")
     ] = None,
+    research: Annotated[
+        bool,
+        typer.Option(
+            "--research/--no-research",
+            help="Pull recent news so part of the week reacts to it",
+        ),
+    ] = True,
 ) -> None:
     """Generate the coming week and write the workbook.
 
@@ -254,6 +261,7 @@ def weekly(
             x_posts=x_posts,
             linkedin_posts=linkedin_posts,
             seed=seed,
+            use_research=research,
             progress=lambda message: console.print(f"[dim]{message}[/dim]"),
         )
 
