@@ -60,6 +60,14 @@ ignore = [
     "RUF001",
     "RUF002",
     "RUF003",
+    # A stopword list reads better as a wrapped block of words than as a
+    # hundred-element list literal.
+    "SIM905",
+    # SQLModel resolves Relationship annotations through SQLAlchemy's registry
+    # at mapper-configuration time, not through typing. Unquoting a forward
+    # reference to a class defined later in the module makes that lookup fail
+    # with KeyError: 'list[ContentDraft]'. The quotes are load bearing.
+    "UP037",
 ]
 
 [tool.ruff.lint.isort]

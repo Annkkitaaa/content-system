@@ -268,6 +268,64 @@ class ContentMix(BaseModel):
         return counts
 
 
+class VisualPolicy(BaseModel):
+    """When a post gets a diagram."""
+
+    model_config = {"frozen": True}
+
+    always: bool = False
+    eligible_types: list[str] = Field(default_factory=list)
+    max_per_day: int | None = None
+    default_kind: str = "chain"
+
+    def allows(self, content_type: str) -> bool:
+        if self.always:
+            return True
+        return content_type in self.eligible_types
+
+
+class ContentRules(BaseModel):
+    """Per content type rules the owner decided rather than the code assumed.
+
+    Two judgement calls live here. Some content types are exempt from the slop
+    detector, because the owner genuinely writes short reflective posts and
+    that genre reads as generic to a detector precisely because the genre is
+    generic. And diagrams are generated where a picture carries the argument,
+    not everywhere.
+    """
+
+    model_config = {"frozen": True}
+
+    slop_exempt: list[str] = Field(default_factory=list)
+    daily_caps: dict[str, int] = Field(default_factory=dict)
+    visuals: dict[str, VisualPolicy] = Field(default_factory=dict)
+    kinds: dict[str, str] = Field(default_factory=dict)
+    bait_patterns_x: list[str] = Field(default_factory=list)
+    allowed_question_note: str = ""
+
+    def is_slop_exempt(self, content_type: str) -> bool:
+        return content_type in self.slop_exempt
+
+    def daily_cap(self, content_type: str) -> int | None:
+        return self.daily_caps.get(content_type)
+
+    def visual_policy(self, platform: Platform) -> VisualPolicy:
+        key = "x" if platform is Platform.X else "linkedin"
+        return self.visuals.get(key, VisualPolicy())
+
+    def wants_visual(self, platform: Platform, content_type: str) -> bool:
+        return self.visual_policy(platform).allows(content_type)
+
+    def bait_patterns(self, platform: Platform) -> list[str]:
+        """Bait rules apply to X only.
+
+        The same closing question is a program violation on X and entirely
+        normal on LinkedIn, so the check has to know which platform it is
+        looking at rather than applying one blanket rule.
+        """
+        return self.bait_patterns_x if platform is Platform.X else []
+
+
 class Settings(BaseSettings):
     """Scalar settings and secrets, from the environment."""
 
@@ -323,6 +381,10 @@ class Settings(BaseSettings):
     @functools.cached_property
     def content_mix(self) -> ContentMix:
         return ContentMix.model_validate(_load_yaml(self.config_dir / "content_mix.yaml"))
+
+    @functools.cached_property
+    def content_rules(self) -> ContentRules:
+        return ContentRules.model_validate(_load_yaml(self.config_dir / "content_rules.yaml"))
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:

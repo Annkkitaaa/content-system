@@ -74,6 +74,10 @@ some rules are program compliance rather than style preference:
 ## Code conventions
 
 - Python 3.12, `from __future__ import annotations` at the top of every module.
+  The one exception is `db/models.py`: SQLModel resolves `Relationship`
+  targets through SQLAlchemy's class registry rather than through `typing`,
+  and PEP 563 turns a forward reference into a string that registry cannot
+  parse. Do not "fix" it.
 - Type hints everywhere. Prefer `X | None` over `Optional[X]`.
 - Pydantic models for anything crossing a boundary (config, LLM payloads, API).
 - `ruff check .` and `ruff format` clean before commit.
