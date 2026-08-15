@@ -33,6 +33,8 @@ from contentsys.db.models import (
 from contentsys.evaluation import EvaluationSuite, overall_score, worst_risk
 from contentsys.export import workbook as wb
 from contentsys.llm.base import LLMProvider, Usage
+from contentsys.research.discover import default_config as default_research_config
+from contentsys.research.discover import gather, has_standing, store, to_ideas
 from contentsys.scheduling.slots import Slot, week_starting, weekly_slots
 from contentsys.voice import load_surface
 from contentsys.voice.profile import active_profile
@@ -54,6 +56,9 @@ class WeeklyResult:
     #: pool that came back thin would otherwise produce a week with holes in
     #: it and no explanation anywhere.
     shortfall: dict[str, int] = field(default_factory=dict)
+    #: Recent items found, and how many posts reacted to them per platform.
+    findings: int = 0
+    reactive: dict[str, int] = field(default_factory=dict)
 
     @property
     def missing(self) -> int:
@@ -74,11 +79,21 @@ def run_weekly(
     x_posts: int | None = None,
     linkedin_posts: int | None = None,
     seed: int | None = None,
+    use_research: bool = True,
     progress: Progress | None = None,
 ) -> WeeklyResult:
     """Generate, evaluate, schedule and export a week."""
     monday = start or week_starting()
     result = WeeklyResult(week_starting=monday)
+
+    research_config = default_research_config()
+    research: list = []
+    if use_research:
+        _note(progress, "looking for what actually happened this week")
+        research = gather(research_config)
+        result.findings = len(research)
+        stored = store(session, research)
+        _note(progress, f"found {len(research)} recent items, {stored} new")
 
     slots = weekly_slots(
         settings,
@@ -96,9 +111,35 @@ def run_weekly(
         if not platform_slots:
             continue
 
-        _note(progress, f"{platform.value}: generating ideas for {len(platform_slots)} posts")
         context = build_context(session, platform, settings=settings)
-        allocation = settings.content_mix.allocate(platform, len(platform_slots))
+
+        # Reactive ideas first, so the evergreen allocation is sized around
+        # what research actually turned up rather than assuming a fixed split
+        # and leaving a gap when the sources are quiet.
+        reactive: list = []
+        if research:
+            wanted = research_config.reactive_count(len(platform_slots))
+            if wanted:
+                usable = [
+                    finding for finding in research if has_standing(finding, context.knowledge)
+                ]
+                reactive = to_ideas(usable[:wanted], platform)
+                if reactive:
+                    result.reactive[platform.value] = len(reactive)
+                    _note(
+                        progress,
+                        f"{platform.value}: {len(reactive)} posts will react to recent news",
+                    )
+                elif usable != research:
+                    _note(
+                        progress,
+                        f"{platform.value}: nothing recent that the knowledge base gives "
+                        "standing to comment on, so the week stays evergreen",
+                    )
+
+        evergreen_target = max(0, len(platform_slots) - len(reactive))
+        _note(progress, f"{platform.value}: generating ideas for {evergreen_target} posts")
+        allocation = settings.content_mix.allocate(platform, evergreen_target)
 
         pool = generate_ideas(
             provider,
@@ -108,8 +149,8 @@ def run_weekly(
             model=settings.generation_model,
             effort=settings.generation_effort,
         )
-        chosen = select_ideas(pool, allocation)
-        result.unused_ideas += len(pool.usable) - len(chosen)
+        chosen = reactive + select_ideas(pool, allocation)
+        result.unused_ideas += len(pool.usable) - (len(chosen) - len(reactive))
 
         # Snapshot the published history before drafting. generate_batch
         # deliberately appends each draft to context.recent_posts so later
@@ -182,6 +223,11 @@ def run_weekly(
     _note(progress, "writing the workbook")
     result.path = str(wb.write(book, settings.export_dir))
     result.summary = wb.summarise(book)
+    if result.findings:
+        total = sum(result.reactive.values())
+        result.summary.append(
+            f"{total} of these react to recent news, from {result.findings} items found"
+        )
     if result.missing:
         gaps = ", ".join(f"{count} on {name}" for name, count in result.shortfall.items())
         result.summary.append(

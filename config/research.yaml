@@ -1,0 +1,76 @@
+# Where the system looks for things that actually happened.
+#
+# Sources are configurable because what is worth watching changes. All of
+# these are public and need no API key, which keeps the weekly run from
+# depending on a credential that can quietly expire.
+#
+# Nothing fetched here is ever allowed to become a personal experience. A
+# source says what happened in the world; the owner's knowledge base says what
+# happened to them. Keeping those apart is the whole reason the research layer
+# is a separate package.
+
+# Share of the weekly X batch that should react to something recent. The rest
+# stays evergreen, drawn from the knowledge base.
+#
+# A quarter is deliberate. The brief says not to become a crypto news account,
+# and past roughly a third the feed starts reading as commentary on other
+# people's work rather than as someone thinking in public.
+reactive_share: 0.25
+
+# How recent something has to be to count as news worth reacting to.
+max_age_days: 10
+
+# Items to pull per source before ranking and deduplication.
+per_source_limit: 12
+
+hacker_news:
+  enabled: true
+  # Searched separately so one busy topic cannot crowd out the others.
+  queries:
+    - zero-knowledge
+    - zk proof
+    - cryptography
+    - post-quantum
+    - smart contract exploit
+  # Below this a story has not been read by enough people to be worth
+  # reacting to. Set low deliberately: ZK and cryptography stories rarely
+  # trend on Hacker News, and at 5 points the source returned one item a
+  # week, which is not a filter, it is an off switch.
+  min_points: 2
+
+arxiv:
+  enabled: true
+  categories:
+    - cs.CR
+  # Searched against the abstract, not filtered from recent listings.
+  # cs.CR is dominated by machine learning security, so filtering the
+  # newest submissions found nothing; asking arXiv to search finds the
+  # relevant papers directly.
+  keywords:
+    - zero-knowledge
+    - zero knowledge
+    - snark
+    - stark
+    - proof system
+    - polynomial commitment
+    - sumcheck
+    - lattice
+    - multilinear
+    - verifiable computation
+    - threshold signature
+
+github_releases:
+  enabled: true
+  # Protocol and prover repositories where a release is genuinely news.
+  repositories:
+    - succinctlabs/sp1
+    - a16z/jolt
+    - microsoft/Nova
+    - privacy-scaling-explorations/halo2
+    - iden3/circom
+    - scipr-lab/libsnark
+    - arkworks-rs/algebra
+
+# Topics to ignore even when they surface. Empty by default; add anything the
+# owner does not want to be seen commenting on.
+avoid: []
