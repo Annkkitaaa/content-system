@@ -44,6 +44,25 @@ _STOPWORDS = frozenset(
 )
 
 
+#: Capitals that are notation rather than capitalisation.
+#:
+#: An all-caps token of two or more characters is an acronym (R1CS, SNARK,
+#: ZK, FRI, KZG). A standalone single capital is a mathematical variable
+#: (H, F, G, r fixed to R). Neither says anything about whether someone
+#: capitalises their sentences.
+#:
+#: This matters more than it looks for a cryptography account. Without it,
+#: "circuit becomes R1CS. R1CS becomes a polynomial." measures as fully
+#: capitalised, which is both wrong about the owner's own writing and a
+#: guaranteed false rejection of any draft that uses correct notation.
+_TECHNICAL_CAPITALS = re.compile(r"\b[A-Z][A-Z0-9]+\b|\b[A-Z]\b")
+
+
+def _without_notation(text: str) -> str:
+    """Remove acronyms and single-letter variables before judging casing."""
+    return _TECHNICAL_CAPITALS.sub("", text)
+
+
 def _is_emoji(char: str) -> bool:
     # Symbol-other covers the emoji blocks; the pictograph ranges catch the
     # rest without pulling in a dependency.
@@ -244,7 +263,8 @@ def analyse(samples: list[str]) -> SurfaceProfile:
         total_words += len(words)
         total_contractions += len(_CONTRACTION.findall(stripped))
 
-        letters = [char for char in stripped if char.isalpha()]
+        prose = _without_notation(stripped)
+        letters = [char for char in prose if char.isalpha()]
         if letters and not any(char.isupper() for char in letters):
             all_lower_posts += 1
 
@@ -282,7 +302,9 @@ def analyse(samples: list[str]) -> SurfaceProfile:
             sentence_words = _words(sentence)
             if sentence_words:
                 sentence_lengths.append(len(sentence_words))
-            first = next((char for char in sentence if char.isalpha()), None)
+            # Notation stripped here too: a sentence opening on "R1CS" says
+            # nothing about whether this person capitalises sentence openers.
+            first = next((char for char in _without_notation(sentence) if char.isalpha()), None)
             if first is not None:
                 total_openers += 1
                 if first.islower():

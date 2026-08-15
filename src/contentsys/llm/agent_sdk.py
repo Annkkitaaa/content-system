@@ -19,6 +19,7 @@ assumed.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import re
 from typing import Any
@@ -104,9 +105,22 @@ class AgentSDKProvider:
         stop_reason: str | None = None
         model_used = self._resolve_model(request) or "unknown"
 
+        # The stream is held in a local so it can be closed explicitly. Simply
+        # breaking out of `async for` leaves the generator suspended, and the
+        # event loop then tears it down mid-iteration, printing
+        # "aclose(): asynchronous generator is already running" to stderr on
+        # every single call. Draining to completion instead of breaking, then
+        # closing in a finally, keeps the output clean.
+        stream = query(prompt=request.prompt, options=options)
+        finished = False
+
         try:
             async with asyncio.timeout(self.timeout):
-                async for message in query(prompt=request.prompt, options=options):
+                async for message in stream:
+                    if finished:
+                        # The result already arrived. Keep draining rather than
+                        # breaking, so the generator ends on its own terms.
+                        continue
                     if isinstance(message, AssistantMessage):
                         model_used = message.model or model_used
                         if message.error:
@@ -122,13 +136,18 @@ class AgentSDKProvider:
                                 "the Agent SDK reported an error: "
                                 + "; ".join(message.errors or ["no detail given"])
                             )
-                        break
+                        finished = True
         except TimeoutError as exc:
             raise LLMUnavailable(f"the Agent SDK did not respond within {self.timeout}s") from exc
         except (LLMError, LLMRefusal):
             raise
         except Exception as exc:
             raise LLMUnavailable(f"the Agent SDK call failed: {exc}") from exc
+        finally:
+            # Belt and braces for the paths that do break out early, such as a
+            # timeout or a refusal raised mid-stream.
+            with contextlib.suppress(Exception):
+                await stream.aclose()
 
         text = "".join(text_parts).strip()
         if not text:
