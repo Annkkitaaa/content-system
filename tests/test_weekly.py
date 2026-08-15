@@ -294,6 +294,34 @@ class TestWeeklyRun:
         if result.missing:
             assert any("Short by" in line for line in result.summary)
 
+    def test_a_draft_is_not_compared_against_itself(
+        self, seeded: Session, settings: Settings
+    ) -> None:
+        # generate_batch appends each draft to context.recent_posts so later
+        # posts avoid repeating earlier ones. Reading that list at evaluation
+        # time made every post its own predecessor, and a live run reported
+        # "identical to a previous post" for all fifteen distinct drafts.
+        result = run_weekly(
+            seeded,
+            MockProvider(),
+            settings,
+            start=date(2026, 8, 17),
+            x_posts=1,
+            linkedin_posts=1,
+            seed=1,
+        )
+        sheet = load_workbook(result.path)["Weekly Calendar"]
+        headers = [cell.value for cell in sheet[1]]
+        notes_column = headers.index("Notes") + 1
+        notes = [
+            str(sheet.cell(row=r, column=notes_column).value or "")
+            for r in range(2, sheet.max_row + 1)
+        ]
+
+        assert not any("identical to a previous post" in note for note in notes), (
+            "a draft is being compared against itself"
+        )
+
     def test_the_calendar_is_in_time_order(self, seeded: Session, settings: Settings) -> None:
         result = run_weekly(
             seeded,
