@@ -158,6 +158,10 @@ def import_samples_command(
         console.print("\nNext: [cyan]contentsys voice build[/cyan]")
 
 
+from contentsys.cli_generate import app as generate_app  # noqa: E402
+
+app.add_typer(generate_app, name="generate")
+
 voice_app = typer.Typer(help="Inspect and rebuild the voice profile.", no_args_is_help=True)
 app.add_typer(voice_app, name="voice")
 

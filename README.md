@@ -40,14 +40,39 @@ Under construction, one phase per pull request.
 |---|---|
 | 0. Foundation: config, provider protocol, tooling | done |
 | 1. Knowledge base, sample ingestion, voice profile | done |
-| 2. Generation: providers, prompts, ideas, drafts | next |
-| 3. Diagrams: flowcharts for LinkedIn, visuals for X where they help | next |
-| 4. Evaluation: authenticity, slop, repetition, monetization | planned |
-| 5. Learning from your edits | planned |
-| 6. Scheduling and Excel export (usable MVP) | planned |
-| 7. Research layer | planned |
-| 8. Dashboard | planned |
-| 9. Performance tracking and platform integration | planned |
+| 2. Providers, prompts, guarantees | done |
+| 3. Idea and draft engines, the eight modes | done |
+| 4. Diagrams: flowcharts for LinkedIn, visuals for X where they help | next |
+| 5. Evaluation: authenticity, slop, repetition, monetization | planned |
+| 6. Learning from your edits | planned |
+| 7. Scheduling and Excel export (usable MVP) | planned |
+| 8. Research layer | planned |
+| 9. Dashboard | planned |
+| 10. Performance tracking and platform integration | planned |
+
+## Generating
+
+Nothing here publishes. Every command prints drafts for you to judge.
+
+```bash
+contentsys generate daily -n 10
+contentsys generate linkedin
+contentsys generate ideas "sumcheck"
+contentsys generate explain "polynomial commitments"
+contentsys generate react "a bridge was drained overnight"
+contentsys generate personal
+```
+
+Brain dump is the one worth knowing about. Give it a messy thought and it
+cleans it up just enough to post, without adding a hook, a lesson, or a
+conclusion you did not write:
+
+```bash
+contentsys generate dump "zk confused me for ages then i realised you're not proving the secret, you're proving something satisfying the constraints exists"
+```
+
+Add `--provider mock` to any of these to see the pipeline run offline and for
+free.
 
 ## Install
 
