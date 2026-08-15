@@ -1,0 +1,29 @@
+# Target distribution of content types.
+#
+# Weights are relative, not percentages, so adding a type does not mean
+# rebalancing every other number. The allocator uses largest-remainder, so
+# the daily and weekly splits always sum to the exact target.
+#
+# The X mix is deliberately wide. Ten posts a day that all follow one shape
+# reads as automation, and repetitive structure is one of the things the
+# repetition engine exists to catch.
+
+x:
+  technical: 2.0        # explain a concept from your actual knowledge base
+  observation: 1.0      # something you noticed
+  opinion: 1.0          # something you genuinely think
+  learning: 1.0         # something you recently understood
+  reaction: 1.0         # your read on something happening
+  personal: 1.0         # only from verified experiences, never invented
+  humor: 1.0            # technical or internet humor
+  question: 1.0         # a real question, not engagement bait
+  mini_analysis: 1.0    # short breakdown of one thing
+  random_thought: 1.0   # spontaneous, unpolished, human
+
+linkedin:
+  technical_explanation: 2.0
+  research_insight: 1.5
+  career_learning: 1.0
+  project_experience: 1.0   # verified experiences only
+  industry_analysis: 1.0
+  thoughtful_opinion: 1.0
