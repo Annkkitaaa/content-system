@@ -217,6 +217,86 @@ def voice_show(
     console.print(table)
 
 
+@app.command("weekly")
+def weekly(
+    provider: Annotated[
+        str | None, typer.Option("--provider", "-p", help="Override the configured provider")
+    ] = None,
+    x_posts: Annotated[int | None, typer.Option("--x-posts", help="X posts per day")] = None,
+    linkedin_posts: Annotated[
+        int | None, typer.Option("--linkedin-posts", help="LinkedIn posts this week")
+    ] = None,
+    seed: Annotated[
+        int | None, typer.Option("--seed", help="Make the calendar reproducible")
+    ] = None,
+) -> None:
+    """Generate the coming week and write the workbook.
+
+    Nothing is published. The workbook is a plan you edit and work from.
+    """
+    from contentsys.llm.registry import build_provider
+    from contentsys.pipeline import run_weekly
+
+    settings = get_settings()
+    create_all()
+    llm = build_provider(provider, settings)
+
+    console.print(
+        f"[dim]Provider {llm.name}, model {settings.generation_model}. "
+        "Nothing will be published.[/dim]\n"
+    )
+
+    with session_scope() as session:
+        result = run_weekly(
+            session,
+            llm,
+            settings,
+            x_posts=x_posts,
+            linkedin_posts=linkedin_posts,
+            seed=seed,
+            progress=lambda message: console.print(f"[dim]{message}[/dim]"),
+        )
+
+    console.print()
+    for line in result.summary:
+        console.print(line)
+
+    usage = result.usage
+    console.print(
+        f"\n[dim]{usage.input_tokens + usage.output_tokens} tokens billed, "
+        f"{usage.cache_read_tokens} served from cache[/dim]"
+    )
+    console.print(f"\n[green]Written to[/green] {result.path}")
+    console.print(
+        "[dim]Edit it, set Status as you approve, then feed edits back with "
+        "'contentsys teach'.[/dim]"
+    )
+
+
+@app.command("monetization")
+def monetization(
+    followers: Annotated[int | None, typer.Option("--followers")] = None,
+    impressions: Annotated[
+        int | None, typer.Option("--impressions", help="Verified impressions over 90 days")
+    ] = None,
+    premium: Annotated[bool | None, typer.Option("--premium/--no-premium")] = None,
+) -> None:
+    """Record where the account stands against the program gates."""
+    from contentsys.pipeline import record_snapshot
+
+    create_all()
+    with session_scope() as session:
+        snapshot = record_snapshot(
+            session,
+            verified_followers=followers,
+            verified_impressions_90d=impressions,
+            premium_active=premium,
+        )
+        captured = snapshot.captured_on
+
+    console.print(f"[green]Recorded for {captured}.[/green] It appears in the next workbook.")
+
+
 @app.command("teach")
 def teach(
     draft: Annotated[Path, typer.Argument(help="File holding the draft as generated")],
