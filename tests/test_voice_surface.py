@@ -61,6 +61,31 @@ class TestCasing:
     def test_a_contraction_does_not_count_as_the_pronoun(self) -> None:
         assert analyse(["i've been reading"]).lowercase_i_ratio == 0.0
 
+    def test_acronyms_do_not_count_as_capitalisation(self) -> None:
+        # Found against a real model. This is the owner's own post, and it
+        # measured as fully capitalised because of R1CS, which made the
+        # profile wrong about her writing and guaranteed a false rejection of
+        # any draft using correct notation.
+        post = "circuit becomes R1CS. R1CS becomes a polynomial."
+
+        assert analyse([post]).all_lowercase_post_ratio == 1.0
+
+    def test_single_letter_variables_do_not_count_either(self) -> None:
+        # A sum over 2^n points equals H. That is notation, not shouting.
+        post = "each round you send one univariate g. i check g(0)+g(1) equals H."
+
+        assert analyse([post]).all_lowercase_post_ratio == 1.0
+
+    def test_real_capitalisation_is_still_detected(self) -> None:
+        # The fix must not blind the check to actual sentence capitalisation.
+        assert analyse(["This Is Ordinary Prose."]).all_lowercase_post_ratio == 0.0
+        assert analyse(["The circuit becomes a polynomial."]).all_lowercase_post_ratio == 0.0
+
+    def test_a_sentence_opening_on_an_acronym_is_not_a_capital_opener(self) -> None:
+        profile = analyse(["R1CS becomes a polynomial. sumcheck does the rest."])
+
+        assert profile.lowercase_opener_ratio == 1.0
+
 
 class TestSentenceShape:
     def test_measures_length_across_the_distribution(self) -> None:
