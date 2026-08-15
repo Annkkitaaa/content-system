@@ -111,6 +111,15 @@ def run_weekly(
         chosen = select_ideas(pool, allocation)
         result.unused_ideas += len(pool.usable) - len(chosen)
 
+        # Snapshot the published history before drafting. generate_batch
+        # deliberately appends each draft to context.recent_posts so later
+        # posts in the run can avoid repeating earlier ones, which means that
+        # by the time evaluation happens the list already contains every
+        # draft. Reading it then makes each post its own predecessor, and the
+        # repetition evaluator reports "identical to a previous post" for the
+        # entire week.
+        published_history = list(context.recent_posts)
+
         _note(progress, f"{platform.value}: drafting {len(chosen)} posts")
         drafts = generate_batch(
             provider,
@@ -127,7 +136,7 @@ def run_weekly(
         _note(progress, f"{platform.value}: evaluating")
         voice = _voice_for(session, platform)
         suite = EvaluationSuite(settings, voice)
-        history = list(context.recent_posts)
+        history = published_history
 
         missing = len(platform_slots) - len(drafts)
         if missing > 0:
