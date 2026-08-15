@@ -1,0 +1,102 @@
+# AI slop detection rules.
+#
+# Configurable rather than a hardcoded blacklist, because what reads as
+# machine written moves. A phrase that was a tell in 2024 is ordinary now, and
+# the reverse happens too.
+#
+# Weights are penalty points. A post accumulates them and the total maps to a
+# risk band. Nothing here is a hard block on its own: slop is a matter of
+# degree, unlike engagement bait, which is a program violation and lives in
+# content_rules.yaml.
+#
+# The same file feeds the deterministic pass and the model based one, so
+# tuning it once changes both halves.
+
+bands:
+  # Total penalty at or above this is the named risk.
+  high: 6.0
+  medium: 3.0
+
+phrases:
+  # Weight 3: almost never appears in writing by a person who is not
+  # performing. Seeing one of these is close to conclusive.
+  - {pattern: "in today's rapidly evolving", weight: 3.0}
+  - {pattern: "in the ever-evolving", weight: 3.0}
+  - {pattern: "we're entering a new era", weight: 3.0}
+  - {pattern: "i'm thrilled to", weight: 3.0}
+  - {pattern: "i'm excited to announce", weight: 3.0}
+  - {pattern: "let that sink in", weight: 3.0}
+  - {pattern: "this changes everything", weight: 3.0}
+  - {pattern: "game changer", weight: 3.0}
+  - {pattern: "buckle up", weight: 3.0}
+  - {pattern: "the future of", weight: 2.0}
+
+  # Weight 2: strongly suggestive, occasionally legitimate.
+  - {pattern: "revolutionary", weight: 2.0}
+  - {pattern: "here's the thing", weight: 2.0}
+  - {pattern: "here's why", weight: 2.0}
+  - {pattern: "it's worth noting that", weight: 2.0}
+  - {pattern: "at the end of the day", weight: 2.0}
+  - {pattern: "the bottom line", weight: 2.0}
+  - {pattern: "nobody talks about", weight: 2.0}
+  - {pattern: "nobody is talking about", weight: 2.0}
+  - {pattern: "delve into", weight: 2.0}
+  - {pattern: "dive deep into", weight: 2.0}
+  - {pattern: "unpack this", weight: 2.0}
+  - {pattern: "supercharge", weight: 2.0}
+  - {pattern: "seamlessly", weight: 2.0}
+
+  # Weight 1: fine once, a tell in aggregate.
+  - {pattern: "leverage", weight: 1.0}
+  - {pattern: "unlock", weight: 1.0}
+  - {pattern: "harness", weight: 1.0}
+  - {pattern: "empower", weight: 1.0}
+  - {pattern: "robust", weight: 1.0}
+  - {pattern: "cutting edge", weight: 1.5}
+  - {pattern: "cutting-edge", weight: 1.5}
+  - {pattern: "paradigm shift", weight: 2.5}
+  - {pattern: "landscape", weight: 1.0}
+  - {pattern: "ecosystem is evolving", weight: 2.0}
+
+openings:
+  # Opening moves that announce a manufactured insight. Matched only at the
+  # start of a post, because the same words mid-post are usually fine.
+  - {pattern: "i realized", weight: 2.0}
+  - {pattern: "i realised", weight: 2.0}
+  - {pattern: "ever wonder", weight: 2.5}
+  - {pattern: "did you know", weight: 2.5}
+  - {pattern: "most people don't", weight: 2.5}
+  - {pattern: "most people think", weight: 2.0}
+  - {pattern: "here's what", weight: 2.0}
+  - {pattern: "hot take", weight: 1.5}
+  - {pattern: "unpopular opinion", weight: 2.0}
+
+structures:
+  # Shape rather than wording. These fire on the layout of the post.
+  numbered_lesson_list:
+    weight: 2.5
+    description: A numbered list of lessons or takeaways
+  hook_then_gap:
+    weight: 2.0
+    description: A one line hook, a blank line, then the actual post
+  emoji_bullets:
+    weight: 2.5
+    description: Bullet points led by emoji
+  excessive_bullets:
+    weight: 1.5
+    description: More than four bullet points in a short post
+  restated_ending:
+    weight: 1.5
+    description: A closing line that restates the opening
+
+punctuation:
+  # Formatting excess. The em dash is handled separately as a hard repair, so
+  # it is not scored here.
+  max_exclamations: 2
+  exclamation_weight: 1.0
+  max_hashtags_x: 2
+  hashtag_weight: 1.0
+  all_caps_word_weight: 1.5
+
+# Content types exempt from all of the above live in content_rules.yaml, so
+# there is one place to look for what is exempt and why.
