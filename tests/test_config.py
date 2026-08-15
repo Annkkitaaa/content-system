@@ -94,13 +94,57 @@ class TestContentMix:
 
 class TestPostingWindow:
     def test_backwards_window_is_rejected(self) -> None:
-        with pytest.raises(ValidationError, match="starts at or after it ends"):
+        with pytest.raises(ValidationError, match="not a forward interval"):
             PostingWindow(name="broken", start="18:00", end="09:00")
 
     @pytest.mark.parametrize("value", ["25:00", "09:61", "morning", "9am", "0900"])
     def test_malformed_clock_is_rejected(self, value: str) -> None:
         with pytest.raises(ValidationError):
             PostingWindow(name="broken", start=value, end="23:00")
+
+    # Clock strings do not sort the way they look once padding is
+    # inconsistent, and a hand-edited config will contain "9:00" sooner or
+    # later. Both directions of that failure are covered here.
+
+    def test_an_unpadded_hour_is_accepted_and_canonicalised(self) -> None:
+        window = PostingWindow(name="morning", start="9:00", end="10:30")
+
+        assert window.start == "09:00"
+        assert window.end == "10:30"
+
+    @pytest.mark.parametrize(
+        ("start", "end"),
+        [
+            ("9:00", "10:30"),  # lexically "9:00" > "10:30"
+            ("8:5", "9:15"),
+            ("0:00", "1:00"),
+        ],
+    )
+    def test_valid_unpadded_windows_are_not_rejected(self, start: str, end: str) -> None:
+        assert PostingWindow(name="fine", start=start, end=end).duration_minutes > 0
+
+    @pytest.mark.parametrize(
+        ("start", "end"),
+        [
+            ("10:00", "9:00"),  # lexically "10:00" < "9:00", so it used to pass
+            ("23:00", "1:00"),
+            ("12:00", "12:00"),
+        ],
+    )
+    def test_backwards_unpadded_windows_are_still_rejected(self, start: str, end: str) -> None:
+        with pytest.raises(ValidationError, match="not a forward interval"):
+            PostingWindow(name="broken", start=start, end=end)
+
+    def test_exposes_minutes_for_the_scheduler(self) -> None:
+        window = PostingWindow(name="evening", start="17:00", end="21:30")
+
+        assert window.start_minutes == 1020
+        assert window.end_minutes == 1290
+        assert window.duration_minutes == 270
+
+    def test_a_missing_separator_is_rejected(self) -> None:
+        with pytest.raises(ValidationError, match="expected HH:MM"):
+            PostingWindow(name="broken", start="900", end="10:00")
 
 
 class TestPlatformSchedule:
