@@ -1,0 +1,43 @@
+# Secrets and local config
+.env
+.env.local
+*.key
+*.pem
+
+# Local data. The knowledge base is personal, never commit it.
+*.db
+*.sqlite
+*.sqlite3
+data/
+exports/
+*.xlsx
+!tests/fixtures/**/*.xlsx
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Node (dashboard, later phase)
+node_modules/
+web/dist/
+web/.vite/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Agent tooling
+.claude/settings.local.json
