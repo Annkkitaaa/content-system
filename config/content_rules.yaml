@@ -1,0 +1,100 @@
+# Per content type rules.
+#
+# Two decisions are encoded here that the rest of the system reads rather than
+# hardcodes, because both are judgement calls the owner made and either could
+# reasonably change later.
+
+# --------------------------------------------------------------------------
+# Slop exemptions.
+#
+# The AI slop detector rejects generic motivational phrasing, and it should:
+# that shape is the single clearest tell of machine written text. But the
+# owner genuinely writes short reflective posts, and they read as generic to a
+# detector precisely because the genre is generic.
+#
+# Rather than weaken the detector globally, one content type is exempted and
+# capped. A technical feed with nothing human in it reads as automation, which
+# the ranking model also penalises, so a small share of these is useful as
+# well as honest.
+# --------------------------------------------------------------------------
+slop_exempt:
+  - personal_reflection
+  - random_thought
+  - humor
+
+# Hard ceilings, applied per day on X. Exempting a type from the slop detector
+# without capping it just moves the problem.
+daily_caps:
+  personal_reflection: 1
+  random_thought: 1
+  humor: 1
+
+# --------------------------------------------------------------------------
+# Diagrams.
+#
+# A picture earns its place when the post's argument has structure: a
+# reduction chain, a protocol exchange, two systems compared. It does not earn
+# its place on an opinion or a one line thought, where an image is decoration
+# and decoration costs a generation call and a review decision.
+# --------------------------------------------------------------------------
+visuals:
+  linkedin:
+    # Every LinkedIn post. The format rewards depth and the subject matter is
+    # nearly always structural.
+    always: true
+    default_kind: chain
+
+  x:
+    always: false
+    # Only these content types are eligible.
+    eligible_types:
+      - technical
+      - mini_analysis
+      - learning
+      - research
+    # Even among eligible posts, only generate a diagram when the content
+    # actually has structure to show. Roughly 2 to 3 a day in practice.
+    max_per_day: 3
+    default_kind: chain
+
+# Which diagram kind suits which shape of argument. The generator picks from
+# this list; the renderer owns how each one looks.
+kinds:
+  chain: A sequence of reductions, each step transforming the problem into something easier
+  flow: A protocol with branching, rounds, or an exchange between two parties
+  comparison: Two systems set side by side on the dimensions that actually differ
+  timeline: An ordered sequence of rounds, or an incident unfolding
+  plot: Real data, when there is real data
+
+# --------------------------------------------------------------------------
+# Engagement bait.
+#
+# Not a style preference. Under X Original Content Rewards these are a program
+# violation, so a match fails the draft outright rather than reducing a score.
+#
+# The same phrasing is acceptable on LinkedIn, where no such program applies
+# and asking a genuine closing question is normal for the format. The
+# evaluator is platform aware for exactly this reason.
+# --------------------------------------------------------------------------
+bait_patterns_x:
+  - let me know in the comments
+  - drop a comment
+  - comment below
+  - repost if you agree
+  - retweet if
+  - like if you
+  - follow for more
+  - tag someone who
+  - who else
+  - am i the only one
+  - agree or disagree
+  - thoughts?
+
+# A genuine question is not bait. The distinction is whether the post gives a
+# reader something specific to answer, or just asks for a reaction. Reply
+# depth is what the ranking model rewards, so real questions are encouraged.
+allowed_question_note: >-
+  A question that names a specific thing to respond to is good and is
+  encouraged. A question whose only purpose is to prompt a reaction is bait.
+  The test: could someone write a substantive two sentence reply to this
+  without guessing what you meant?
