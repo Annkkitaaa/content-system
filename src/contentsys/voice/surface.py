@@ -366,24 +366,32 @@ def compare(profile: SurfaceProfile, candidate: str) -> dict[str, Any]:
 
     if profile.all_lowercase_post_ratio >= 0.6 and draft.all_lowercase_post_ratio < 1.0:
         issues.append("capitalised, but this voice writes in lowercase")
-    if profile.lowercase_i_ratio >= 0.7 and draft.lowercase_i_ratio < 0.5:
-        issues.append("uses a capital I, but this voice writes i lowercase")
+
+    # Count the capital pronoun directly rather than inferring it from a
+    # ratio. A post containing no first person pronoun at all also has a
+    # lowercase_i_ratio of zero, and treating that as "uses a capital I"
+    # flagged a large share of perfectly good drafts.
+    if profile.lowercase_i_ratio >= 0.7:
+        capitals = len(re.findall(r"(?<![A-Za-z'])I(?![A-Za-z'])", candidate))
+        if capitals:
+            issues.append("uses a capital I, but this voice writes i lowercase")
+
     if profile.emoji_ratio < 0.05 and draft.emoji_ratio > 0:
         issues.append("contains emoji, which this voice does not use")
     if profile.hashtag_ratio < 0.1 and draft.hashtag_ratio > 0:
         issues.append("contains hashtags, which this voice rarely uses here")
 
-    if draft.median_sentence_words and profile.median_sentence_words:
-        ratio = draft.median_sentence_words / profile.median_sentence_words
-        if ratio > 1.6:
+    # Compare against the top of the person's range, not their median. A
+    # single post is a sample of one or two sentences; a corpus median is
+    # dragged down by every "good morning" in the archive. Measuring a point
+    # sample against that median flagged ordinary drafts as too long and sent
+    # them back for regeneration, which costs a real API call every time.
+    if draft.median_sentence_words and profile.p90_sentence_words:
+        ceiling = profile.p90_sentence_words * 1.25
+        if draft.median_sentence_words > ceiling:
             issues.append(
-                f"sentences run long ({draft.median_sentence_words:.0f} words median "
-                f"against a usual {profile.median_sentence_words:.0f})"
-            )
-        elif ratio < 0.55:
-            issues.append(
-                f"sentences run short ({draft.median_sentence_words:.0f} words median "
-                f"against a usual {profile.median_sentence_words:.0f})"
+                f"sentences run long ({draft.median_sentence_words:.0f} words median, "
+                f"against {profile.p90_sentence_words:.0f} at this voice's 90th percentile)"
             )
 
     return {"issues": issues, "measured": draft.to_dict(), "passes": not issues}

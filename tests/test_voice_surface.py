@@ -193,6 +193,33 @@ class TestCompare:
 
         assert any("emoji" in issue for issue in result["issues"])
 
+    def test_a_post_with_no_pronoun_is_not_flagged_for_a_capital_i(
+        self, profile: SurfaceProfile
+    ) -> None:
+        # A post containing no first person pronoun has the same measured
+        # ratio as one using a capital I. Conflating them flagged a large
+        # share of good drafts and sent each one back for a paid retry.
+        result = compare(profile, "sumcheck collapses an exponential sum to one point.")
+
+        assert not any("capital I" in issue for issue in result["issues"])
+
+    def test_an_actual_capital_i_is_still_flagged(self, profile: SurfaceProfile) -> None:
+        result = compare(profile, "I think the reduction is the whole point.")
+
+        assert any("capital I" in issue for issue in result["issues"])
+
+    def test_an_ordinary_length_draft_is_not_flagged_as_long(self, profile: SurfaceProfile) -> None:
+        # The corpus median is dragged down by every "good morning" in the
+        # archive, so comparing a single post against it rejected normal
+        # writing. The comparison is against the top of the range instead.
+        result = compare(
+            profile,
+            "still not over how spartan avoids a trusted setup. "
+            "the elegance is that none of the pieces are clever on their own.",
+        )
+
+        assert not any("long" in issue for issue in result["issues"]), result["issues"]
+
     def test_an_overlong_sentence_is_flagged(self, profile: SurfaceProfile) -> None:
         result = compare(
             profile,
