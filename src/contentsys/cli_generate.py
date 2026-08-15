@@ -178,6 +178,44 @@ def personal(
     _show([draft])
 
 
+@app.command("diagram")
+def diagram(
+    text: Annotated[str, typer.Argument(help="The post to draw a diagram for")],
+    provider: ProviderOption = None,
+    platform: PlatformOption = Platform.X,
+    name: Annotated[str, typer.Option("--name", help="Filename stem")] = "diagram",
+) -> None:
+    """Draw a diagram for a post.
+
+    A model decides what the diagram says; deterministic code decides how it
+    looks. If the post has no structure worth drawing, that is a real answer
+    and nothing is written.
+    """
+    from contentsys.visuals import diagram_path, generate_diagram, render
+
+    settings, llm, platform, _ = _prepare(provider, platform, "technical")
+    with session_scope() as session:
+        context = build_context(session, platform, settings=settings)
+        spec = generate_diagram(
+            llm,
+            context,
+            content=text,
+            model=settings.generation_model,
+            effort=settings.generation_effort,
+        )
+
+    if spec is None:
+        console.print(
+            "[yellow]No diagram. This post does not carry a structure worth drawing, "
+            "or the model did not return a usable one.[/yellow]"
+        )
+        raise typer.Exit(0)
+
+    path = render(spec, diagram_path(settings.export_dir, platform, name))
+    console.print(f"[green]Wrote[/green] {path}")
+    console.print(f"[dim]alt text: {spec.describe()}[/dim]")
+
+
 @app.command("dump")
 def dump(
     text: Annotated[

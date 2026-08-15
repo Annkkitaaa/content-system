@@ -17,6 +17,10 @@ dependencies = [
     "pyyaml>=6.0",
     "python-dateutil>=2.9",
     "tzdata>=2024.2",
+    # Diagram rendering. A core dependency rather than an extra: every
+    # LinkedIn post gets a diagram, so a system without it is missing a
+    # deliverable rather than an optional feature.
+    "matplotlib>=3.9",
 ]
 
 [project.optional-dependencies]
