@@ -1,0 +1,84 @@
+# The regression corpus.
+#
+# Labelled examples asserted against the evaluators, so scoring cannot drift
+# quietly as prompts and rules change. Adding a new slop pattern that starts
+# rejecting the authentic examples should break the build, not ship.
+#
+# The authentic examples are the owner's real posts. The rest are written to
+# fail in one specific way each, so a failure names the thing that broke.
+
+authentic:
+  - text: |-
+      i used to think proving something meant checking everything.  turns out some of the smartest proof systems prove everything by checking almost nothing.
+    note: real post, the account's signature move
+  - text: |-
+      every paper changes what you know. the good ones change how you think.
+    note: real post, contrast pair
+  - text: |-
+      one thing i appreciate more every time i read a cryptography paper is how much effort goes into reducing a problem. rarely do papers solve the original problem directly.
+    note: real post, reduction thesis
+  - text: "good morning 💜"
+    note: real post, emoji, deliberately trivial
+  - text: "is threads worth it? like i have not met anyone who uses it. do you?"
+    note: real post, a genuine question rather than bait
+
+good:
+  - text: |-
+      sumcheck only sends two coefficients per round. the whole protocol is linear in the number of variables, and that is the entire reason it replaced ffts.
+    note: concrete, specific, repliable
+  - text: |-
+      spartan and groth16 both start from r1cs and then immediately disagree about what to do with it. one goes to a qap and needs a trusted setup, the other goes multilinear and does not.
+    note: comparison with a real claim
+
+slop:
+  - text: |-
+      In today's rapidly evolving landscape, zero-knowledge proofs are a game changer.
+
+      Here's why this revolutionary technology will unlock the future of privacy:
+
+      1. Lesson one: scalability
+      2. Lesson two: security
+      3. Lesson three: adoption
+
+      Let that sink in.
+    note: nearly every phrase and structure rule at once
+  - text: |-
+      I realized something profound today about cryptography.
+
+      Most people don't understand that we're entering a new era.
+    note: manufactured realisation opener plus era phrasing
+  - text: "This is a GAME CHANGER!!! Truly REVOLUTIONARY stuff here!!!"
+    note: shouting and exclamation excess
+
+bait:
+  - text: "zk proofs are underrated. agree or disagree? let me know in the comments"
+    note: program violation on X, must block
+  - text: "repost if you agree that sumcheck is underrated"
+    note: program violation on X, must block
+  - text: "follow for more zk content"
+    note: program violation on X, must block
+
+fabricated:
+  - text: "when i was working at a protocol team, we hit this exact bug constantly"
+    note: invented employment, must block without a verified experience
+  - text: "i built a prover last year and it taught me more than any paper"
+    note: invented project, must block
+  - text: "i cut our proving time by 40% with one change to the constraint system"
+    note: invented metric, the most quotable kind of fabrication
+
+too_generic:
+  - text: |-
+      Technology is changing fast. It is important to keep learning and stay curious about new developments in the space.
+    note: true of anything, says nothing
+  - text: "consistency beats intensity. show up every day."
+    note: could have been written by anyone about anything
+
+too_promotional:
+  - text: |-
+      Excited to share that our new protocol is live! Check it out and let me know what you think. Big things coming.
+    note: announcement register plus a call to action
+
+too_technical:
+  - text: |-
+      The MLE of the R1CS witness vector z is evaluated at r in F^log n, with the sumcheck reducing sum over x in {0,1}^s of eq(tau, x) * (Az(x) * Bz(x) - Cz(x)) to a single claim, then batched via a random linear combination with coefficients drawn after the commitment.
+    note: correct but unreadable without already knowing it
