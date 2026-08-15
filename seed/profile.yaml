@@ -1,0 +1,273 @@
+# Starting knowledge base.
+#
+# Everything here comes from public sources: the X profile and posts, public
+# LinkedIn posts, and the Medium article list. Nothing was inferred about the
+# owner beyond what those state. Anything uncertain is marked
+# `confidence: inferred` and is not usable to back a first-person claim.
+#
+# This file is committed because it is all already public. Private notes go in
+# the live database under data/, which is gitignored and never leaves the
+# machine.
+#
+# Load it with:  contentsys seed
+
+owner:
+  name: Ankita Singh
+  handles:
+    x: annkkitaaa
+    medium: aannkkiittaa
+  bio: >-
+    i turn ZK & cryptography research into things you can actually understand
+  positioning: >-
+    Explains zero knowledge and cryptography research so that a technically
+    capable reader who has not studied the topic can genuinely follow it.
+    The value is not summarising papers, it is making the reduction visible.
+
+# --------------------------------------------------------------------------
+# Experiences. The strict layer.
+#
+# A post may only make a first-person claim that maps to one of these. If it
+# is not here, it did not happen, and the generator writes something
+# analytical instead.
+# --------------------------------------------------------------------------
+experiences:
+  - summary: Cryptography and ZK intern at Nethermind
+    organisation: Nethermind
+    role: Intern
+    evidence: "X bio: intern @nethermind"
+    evidence_url: https://x.com/annkkitaaa
+    confidence: stated
+    tags: [work, zk, current]
+
+  - summary: Previously interned at OpenZeppelin
+    organisation: OpenZeppelin
+    role: Intern
+    evidence: "X bio: prev intern @OpenZeppelin"
+    evidence_url: https://x.com/annkkitaaa
+    confidence: stated
+    tags: [work, security, past]
+
+  - summary: Helping grow Torbit
+    organisation: Torbit
+    role: Growing
+    evidence: "X bio: growing @torbitxyz, and a post sharing the waitlist"
+    evidence_url: https://x.com/annkkitaaa/status/2086873305076957369
+    confidence: stated
+    tags: [work, current]
+
+  - summary: Associated with ShEFi India
+    organisation: ShEFi India
+    evidence: "X bio: @shefiindia"
+    confidence: stated
+    tags: [community]
+
+  - summary: Runs the X community "thinking in proofs", 65 members
+    detail: >-
+      Described as thinking through math, cryptography and zk, breaking down
+      complex ideas, papers and proofs until they actually make sense.
+    evidence: "X profile community listing, 65 members"
+    evidence_url: https://x.com/i/communities/2036363698818679282
+    confidence: stated
+    tags: [community, zk, teaching]
+
+  - summary: Read the Spartan proof system paper and wrote up why it works
+    detail: >-
+      Spent several days reading Spartan with the explicit goal of
+      understanding why it works rather than memorising the protocol. Wrote a
+      LinkedIn breakdown of the reduction chain: computation to R1CS, R1CS to
+      multilinear polynomials, sum-check to collapse an exponential claim to
+      one evaluation, polynomial commitments to make it binding. Also compared
+      it against Groth16 and noted why the transparent setup differs.
+    evidence: "LinkedIn post: Understanding Spartan from First Principles, 921 impressions"
+    confidence: stated
+    tags: [zk, paper, spartan, writing]
+
+  - summary: Wrote a deep breakdown of the sumcheck protocol
+    detail: >-
+      Argued sumcheck is the most reused primitive in modern ZK and traced how
+      it appears in GKR, Spartan, HyperPlonk, Lasso and Jolt. Covered the round
+      structure, why soundness follows from Schwartz-Zippel at each round, and
+      why avoiding FFTs matters for prover time and setup.
+    evidence: LinkedIn post on the sumcheck protocol
+    confidence: stated
+    tags: [zk, sumcheck, writing]
+
+  - summary: Wrote "Groth16, explained from first principles"
+    evidence: "X post, 25 July"
+    evidence_url: https://x.com/annkkitaaa/status/2081021129221922959
+    confidence: stated
+    tags: [zk, groth16, writing]
+
+  - summary: Writes ZK and cryptography explainers on Medium
+    detail: >-
+      Published pieces include Why Web3 Exists Because of Cryptography
+      (Explained Like I'm 12), Understanding Plonky2, Understanding RedShift,
+      Understanding FRI Polynomial Commitments, Modular Arithmetic as the clock
+      that powers cryptography, and DePIN.
+    evidence_url: https://medium.com/@aannkkiittaa
+    confidence: stated
+    tags: [writing, zk, teaching]
+
+  - summary: Wrote post-mortems on two real security incidents
+    detail: >-
+      The Venus Protocol wUSDM donation attack analysis and the WazirX multisig
+      wallet hack post-mortem, the latter covering attack vector, assets stolen
+      and users affected.
+    evidence_url: https://medium.com/@aannkkiittaa
+    confidence: stated
+    tags: [security, incident-analysis, writing]
+
+  - summary: Reached 145 followers on Medium
+    evidence: "X post, 25 July: 145 followers on medium :)"
+    evidence_url: https://x.com/annkkitaaa/status/2081037070290862168
+    confidence: stated
+    tags: [milestone]
+
+  - summary: Joined X in July 2024
+    evidence: X profile
+    confidence: stated
+    tags: [milestone]
+
+  # Drawn from a local working directory rather than a public statement, so
+  # it is marked inferred until confirmed. Not usable for first-person
+  # content while it stays inferred.
+  - summary: Working on Circom circuits for a private ERC20
+    detail: >-
+      Test vectors present for Poseidon t6 and t7, and for entry and exit
+      flows covering claim, execution and refund, plus spend-to-exit intent
+      anchors and cross-check tuples.
+    evidence: Local repository private-erc20/circuits/circom/test-vectors
+    confidence: inferred
+    tags: [zk, circom, poseidon, needs-confirmation]
+
+# --------------------------------------------------------------------------
+# Opinions. Things actually said, with the strength they were said at.
+# --------------------------------------------------------------------------
+opinions:
+  - statement: >-
+      Cryptography papers rarely solve the original problem directly. They
+      reduce it to something easier, and the reduction is the real content.
+    reasoning: >-
+      Stated directly and demonstrated repeatedly: circuit becomes R1CS, R1CS
+      becomes a polynomial, the polynomial claim becomes one evaluation.
+    topic: cryptography
+    strength: strong
+    evidence: "X post, 11 Aug"
+    confidence: stated
+
+  - statement: >-
+      The smartest proof systems prove everything by checking almost nothing.
+    topic: zk
+    strength: strong
+    evidence: "X post: i used to think proving something meant checking everything"
+    confidence: stated
+
+  - statement: >-
+      Every paper changes what you know. The good ones change how you think.
+    reasoning: >-
+      Cryptography papers do not just teach protocols, they teach a different
+      way of looking at computation.
+    topic: research
+    strength: strong
+    evidence: "X post, 11 Aug"
+    confidence: stated
+
+  - statement: >-
+      Understanding why something works matters more than memorising the
+      protocol.
+    topic: learning
+    strength: strong
+    evidence: "LinkedIn, Spartan post opening"
+    confidence: stated
+
+  - statement: >-
+      Sumcheck is the workhorse of modern ZK, and the proof system landscape
+      is converging on it as the core primitive.
+    reasoning: >-
+      It avoids FFTs so the prover is linear, it is commitment-scheme
+      agnostic, and it is modular enough to drop in wherever a sum needs
+      verifying.
+    topic: zk
+    strength: strong
+    evidence: LinkedIn sumcheck post
+    confidence: stated
+
+  - statement: >-
+      What makes Spartan elegant is that none of its ideas are mysterious on
+      their own. They are beautiful tools from algebra and interactive proofs
+      that only become Spartan together.
+    topic: zk
+    strength: held
+    evidence: LinkedIn Spartan post
+    confidence: stated
+
+  - statement: It is much harder for small accounts to go viral on X.
+    topic: platform
+    strength: held
+    evidence: "X post, 25 July"
+    confidence: stated
+
+  - statement: >-
+      Losing reach after a couple of days away from the timeline is
+      frustrating and a bit absurd.
+    topic: platform
+    strength: held
+    evidence: "X post, 7 Aug"
+    confidence: stated
+
+  - statement: >-
+      Life does not change in big moments. It changes in ordinary days you do
+      not realise you will remember.
+    topic: personal
+    strength: held
+    evidence: "X post, 10 Aug"
+    confidence: stated
+
+# --------------------------------------------------------------------------
+# Knowledge. Depth governs how strongly a claim may be phrased.
+#   aware     heard of it, do not write technical claims
+#   familiar  can explain the shape, hedge the details
+#   working   have read and written about it
+#   deep      have explained it from first principles
+# --------------------------------------------------------------------------
+knowledge:
+  - {concept: Sumcheck protocol, domain: zk, depth: deep, evidence: LinkedIn deep dive covering rounds, soundness and adoption}
+  - {concept: R1CS, domain: zk, depth: deep, evidence: Central to both the Spartan and Groth16 write-ups}
+  - {concept: Groth16, domain: zk, depth: working, evidence: Wrote Groth16 explained from first principles}
+  - {concept: Spartan, domain: zk, depth: working, evidence: Read the paper and wrote a first principles breakdown}
+  - {concept: Multilinear extensions, domain: zk, depth: working, evidence: Covered in the Spartan write-up}
+  - {concept: Polynomial commitments, domain: zk, depth: working, evidence: Covered in Spartan and the FRI article}
+  - {concept: FRI, domain: zk, depth: working, evidence: Medium article on FRI polynomial commitments}
+  - {concept: Schwartz-Zippel lemma, domain: zk, depth: working, evidence: Named as the foundation under sumcheck soundness}
+  - {concept: QAP, domain: zk, depth: working, evidence: Contrasted against Spartan in the Groth16 comparison}
+  - {concept: Modular arithmetic, domain: cryptography, depth: deep, evidence: Medium article using the clock analogy}
+  - {concept: GKR, domain: zk, depth: familiar, evidence: Described in the sumcheck post as layered circuit verification}
+  - {concept: HyperPlonk, domain: zk, depth: familiar, evidence: Described in the sumcheck post}
+  - {concept: Lasso and Jolt, domain: zk, depth: familiar, evidence: Described as sumcheck based lookup arguments}
+  - {concept: Nova, domain: zk, depth: aware, evidence: Named as future reading built on Spartan ideas}
+  - {concept: Plonky2, domain: zk, depth: familiar, evidence: Medium article on recursive proofs}
+  - {concept: RedShift, domain: zk, depth: familiar, evidence: Medium article on transparent SNARKs}
+  - {concept: Poseidon hash, domain: zk, depth: working, evidence: Circom test vectors for t6 and t7}
+  - {concept: Circom, domain: zk, depth: working, evidence: Writing circuits for a private ERC20}
+  - {concept: Smart contract incident analysis, domain: security, depth: working, evidence: Venus Protocol and WazirX post-mortems}
+  - {concept: DePIN, domain: web3, depth: familiar, evidence: Medium article}
+  - {concept: Trusted setup versus transparency, domain: zk, depth: working, evidence: Central to the Spartan versus Groth16 comparison}
+
+# --------------------------------------------------------------------------
+# Topics. `core` drives niche coherence: X ranking is interest graph driven,
+# so wandering too far outside the core set costs distribution.
+# --------------------------------------------------------------------------
+topics:
+  - {name: zero knowledge proofs, core: true, cooldown_days: 2}
+  - {name: cryptography, core: true, cooldown_days: 2}
+  - {name: proof systems, core: true, cooldown_days: 3}
+  - {name: polynomial commitments, core: true, cooldown_days: 5}
+  - {name: research workflow, core: true, cooldown_days: 4}
+  - {name: learning in public, core: true, cooldown_days: 4}
+  - {name: blockchain, core: true, cooldown_days: 4}
+  - {name: security incidents, core: true, cooldown_days: 6}
+  - {name: web3, core: true, cooldown_days: 5}
+  - {name: developer experience, core: false, cooldown_days: 7}
+  - {name: career, core: false, cooldown_days: 7}
+  - {name: personal reflection, core: false, cooldown_days: 3}
+  - {name: internet culture, core: false, cooldown_days: 5}

@@ -38,15 +38,16 @@ Under construction, one phase per pull request.
 
 | Phase | State |
 |---|---|
-| 0. Foundation: config, provider protocol, tooling | in progress |
-| 1. Knowledge base, sample ingestion, voice profile | planned |
-| 2. Generation: providers, prompts, ideas, drafts | planned |
-| 3. Evaluation: authenticity, slop, repetition, monetization | planned |
-| 4. Learning from your edits | planned |
-| 5. Scheduling and Excel export (usable MVP) | planned |
-| 6. Research layer | planned |
-| 7. Dashboard | planned |
-| 8. Performance tracking and platform integration | planned |
+| 0. Foundation: config, provider protocol, tooling | done |
+| 1. Knowledge base, sample ingestion, voice profile | done |
+| 2. Generation: providers, prompts, ideas, drafts | next |
+| 3. Diagrams: flowcharts for LinkedIn, visuals for X where they help | next |
+| 4. Evaluation: authenticity, slop, repetition, monetization | planned |
+| 5. Learning from your edits | planned |
+| 6. Scheduling and Excel export (usable MVP) | planned |
+| 7. Research layer | planned |
+| 8. Dashboard | planned |
+| 9. Performance tracking and platform integration | planned |
 
 ## Install
 

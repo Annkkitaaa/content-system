@@ -1,0 +1,194 @@
+# Writing samples: the ground truth for the voice engine.
+#
+# All of these are the owner's own words, taken from public posts. Nothing
+# generated ever goes in here, because a voice model trained on its own output
+# drifts toward the average of itself.
+#
+# `exclude: true` keeps a post in the record but out of the voice measurement.
+# Used for one word replies and greetings: they are real, but they would drag
+# the sentence length statistics toward nothing and they carry no style signal.
+#
+# This is a starting set of about two dozen posts. It is enough to get the
+# mechanics right. Voice fidelity improves sharply with a few hundred, so the
+# full X archive is worth exporting when convenient.
+
+x:
+  - content: |-
+      one thing I appreciate more every time I read a cryptography paper is how much effort goes into reducing a problem.  rarely do papers solve the original problem directly.  They ask:  Can I transform this into something easier?  - circuit becomes R1CS. - R1CS becomes a polynomial.
+    published_at: 2026-08-11
+    topic: cryptography
+    url: https://x.com/annkkitaaa/status/2087128590232215653
+
+  - content: |-
+      i used to think proving something meant checking everything.  turns out some of the smartest proof systems prove everything by checking almost nothing.
+    published_at: 2026-08-11
+    topic: zero knowledge proofs
+    url: https://x.com/annkkitaaa/status/2087128265119207490
+
+  - content: |-
+      every paper changes what you know. the good ones change how you think.  lately I've realized cryptography papers don't just teach protocols, they teach an entirely different way of looking at computation.
+    published_at: 2026-08-11
+    topic: research workflow
+    url: https://x.com/annkkitaaa/status/2087128174446649759
+
+  - content: "good morning!!"
+    published_at: 2026-08-11
+    topic: personal reflection
+
+  - content: "is threads worth it? like i have not met anyone who uses it. do you?"
+    published_at: 2026-08-11
+    topic: internet culture
+
+  - content: "ugggggggggggggggghhhhhhhhhhhhh"
+    published_at: 2026-08-10
+    topic: personal reflection
+
+  - content: "lately i've been so negative whenever it comes to myself."
+    published_at: 2026-08-10
+    topic: personal reflection
+
+  - content: |-
+      i don't think life changes in big moments.  i think it changes in ordinary days that you don't realize you'll remember.
+    published_at: 2026-08-10
+    topic: personal reflection
+
+  - content: |-
+      sometimes the strongest version of you is quietly being built while you feel like you're falling behind.
+    published_at: 2026-08-10
+    topic: personal reflection
+
+  - content: 'august feels like a "everything will work out" kind of month.'
+    published_at: 2026-08-07
+    topic: personal reflection
+
+  - content: "sunshine, good music, and zero overthinking."
+    published_at: 2026-08-07
+    topic: personal reflection
+
+  - content: |-
+      i hate how you lose reach after disappearing for like 2 days what do you expect me to do, live on the timeline 24/7? anyway, i'm back.
+    published_at: 2026-08-07
+    topic: internet culture
+
+  - content: 'every rabbit hole starts with "i''m just going to spend five minutes looking this up."'
+    published_at: 2026-08-07
+    topic: research workflow
+
+  - content: |-
+      sometimes life gets a little lighter when you stop trying to carry every tomorrow at once.
+    published_at: 2026-07-25
+    topic: personal reflection
+
+  - content: "It's much much harder for small accounts to go viral on X."
+    published_at: 2026-07-25
+    topic: internet culture
+
+  - content: "145 followers on medium :)"
+    published_at: 2026-07-25
+    topic: personal reflection
+
+  - content: "Groth16, explained from first principles"
+    published_at: 2026-07-25
+    topic: proof systems
+
+  - content: "hello hello! long time"
+    published_at: 2026-08-05
+    topic: personal reflection
+
+  # Kept for the record, excluded from voice measurement: no style signal.
+  - {content: "maybe", published_at: 2026-08-10, exclude: true, exclusion_reason: one word reply}
+  - {content: "lets go!", published_at: 2026-07-25, exclude: true, exclusion_reason: reply to a quoted post}
+  - {content: "good afternoon", published_at: 2026-07-28, exclude: true, exclusion_reason: greeting}
+  - {content: "thank you universe", published_at: 2026-07-25, exclude: true, exclusion_reason: greeting}
+  - {content: "too close, join the waitlist!! http://torbit.xyz", published_at: 2026-08-10, exclude: true, exclusion_reason: promotional repost}
+
+linkedin:
+  - topic: proof systems
+    published_at: 2026-07-25
+    impressions: 921
+    content: |-
+      Understanding Spartan from First Principles
+
+      Over the past few days, I've been reading the Spartan proof system, and I wanted to understand why it works, not just memorize the protocol.
+
+      At first glance, Spartan can feel overwhelming. The paper is full of multilinear extensions, sum-check protocols, polynomial commitments, and algebraic reductions. It's easy to get lost in the notation.
+
+      But once I stepped back, I realized Spartan is telling a surprisingly simple story.
+
+      How can a verifier be convinced that millions of arithmetic constraints are satisfied without checking every single one?
+
+      The answer is a sequence of elegant reductions.
+
+      Each step transforms the verification problem into something smaller and more structured.
+
+      A computation first becomes an R1CS, where every operation is represented as arithmetic constraints.
+
+      Instead of reasoning about millions of individual constraints, Spartan encodes them as multilinear polynomials. It then constructs a single polynomial whose behavior captures whether the entire computation is valid.
+
+      Rather than checking this polynomial everywhere (which would be impossible), Spartan uses the Sum-check protocol to reduce an exponentially large claim into a single polynomial evaluation at a random point.
+
+      Finally, polynomial commitments ensure that the prover cannot change the polynomial after committing to it.
+
+      What I found particularly elegant is that none of these ideas are mysterious on their own.
+      - R1CS models computation.
+      - Multilinear extensions convert discrete data into polynomials.
+      - Sum-check compresses exponentially many evaluations into a logarithmic number of interactions.
+      - Polynomial commitments make every claimed evaluation binding.
+
+      Individually, these are beautiful tools from algebra and interactive proofs.
+      Together, they become Spartan.
+
+      One thing that also stood out to me is how different Spartan is from Groth16.
+
+      Although both start from the same R1CS representation, they diverge immediately afterward.
+      Groth16 transforms the circuit into a Quadratic Arithmetic Program (QAP) and relies on pairing-based cryptography with a trusted setup.
+
+      Spartan instead follows a transparent approach built around multilinear extensions, sum-check, and polynomial commitments, eliminating the need for a trusted setup entirely.
+      Studying Spartan has also helped me appreciate why many modern proof systems, especially recursive SNARKs like Nova, build on similar ideas.
+
+      This is just the beginning of my exploration into Spartan, and I'm planning to dive deeper into topics like:
+      - Multilinear Extensions (MLEs)
+      - The Sum-check Protocol
+      - Polynomial Commitments
+      - How Spartan differs from Groth16 internally
+      - How Nova builds on Spartan's ideas
+
+      If you're also learning zero-knowledge proofs, I'd love to hear what resources or papers helped you build intuition beyond the equations.
+
+  - topic: zero knowledge proofs
+    content: |-
+      The sumcheck protocol is the most reused primitive in modern ZK. It appears in Spartan, HyperPlonk, Lasso, Jolt, GKR, and virtually every proof system built in the last 3 years. If Schwartz-Zippel is the foundation, sumcheck is the workhorse.
+
+      The problem: you have a multivariate polynomial f(x1, ..., xn) and you want to prove its sum over all binary inputs equals a claimed value H.
+
+      That's 2^n terms. For n = 30, over a billion evaluations. The verifier can't compute this.
+
+      The sumcheck approach: the prover "peels off" one variable at a time across n rounds.
+      Round 1: prover sends g1(X1) = sum over remaining variables. Verifier checks g1(0) + g1(1) = H. Picks random r1.
+      Round 2: prover sends g2(X2) with x1 fixed to r1. Verifier checks g2(0) + g2(1) = g1(r1). Picks random r2.
+
+      After n rounds, all variables are fixed. The verifier checks ONE evaluation: f(r1, ..., rn). That's it. Exponential sum verified with linear work.
+
+      Soundness comes from Schwartz-Zippel at every round. If the prover lies about any gi, the random challenge catches it with overwhelming probability.
+
+      How does ZK use this?
+      - The GKR protocol verifies layered circuits by running sumcheck at each layer, reducing output claims to input claims. The verifier never evaluates the full circuit.
+      - Spartan showed sumcheck can replace FFTs entirely. R1CS constraints become a multivariate polynomial, verified directly via sumcheck. No FFT means no powers-of-2 restriction, linear prover time, and no trusted setup.
+      - HyperPlonk combines PLONK's custom gates with sumcheck over multilinear polynomials. Gate constraints become sumcheck instances. The FFT bottleneck disappears.
+      - Lasso and Jolt use sumcheck for lookup arguments. Instead of sorting-based lookups (Plookup), they use sumcheck-based memory checking. This makes lookups over massive tables feasible. Jolt's entire zkVM treats the RISC-V ISA as one giant lookup table verified by sumcheck.
+
+      The pattern: sumcheck works natively with multilinear polynomials (degree 1 per variable). Each round, the prover sends a linear polynomial, just 2 coefficients. Communication is minimal.
+
+      Why sumcheck is becoming universal: it avoids FFTs (linear prover), it's commitment-scheme-agnostic (works with KZG, FRI, IPA), and it's modular (plug it in wherever you need to verify a sum).
+
+      The proof system landscape is converging on sumcheck as the core primitive. Understanding it deeply means understanding the engine powering the next generation of ZK.
+
+      n rounds. n random challenges. One final evaluation. The exponential sum collapses to a single point.
+
+medium:
+  - topic: cryptography
+    url: https://medium.com/@aannkkiittaa
+    content: |-
+      Modular Arithmetic: The Clock That Powers All of Cryptography
+
+      If it's 11 PM right now and I say "see you in 4 hours," you don't say "see you at 15 PM."

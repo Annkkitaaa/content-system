@@ -151,6 +151,35 @@ Failing drafts are regenerated with the failure reason fed back in, bounded by
 `max_regeneration_attempts`, then flagged for review rather than silently
 shipped.
 
+### Diagram engine
+
+Every LinkedIn post gets a diagram, and X posts get one where it earns its
+place. For content about proof systems this is not decoration: the whole
+argument in a post about Spartan is a reduction chain, and a chain is a
+picture. A reader who cannot follow four paragraphs of multilinear extensions
+can follow four boxes and three arrows.
+
+The split that keeps this reliable: **a model decides the content of the
+diagram, code decides how it looks.** The generator emits a structured spec
+(nodes, edges, kind, labels) rather than an image or drawing instructions.
+A deterministic renderer turns that spec into a PNG using a fixed house style.
+
+That split buys three things. Rendering is testable, since the same spec
+always produces the same image. Every diagram looks like it came from the same
+person, which matters when they accumulate on a profile. And a style change
+regenerates every past image without asking a model to reinvent it, which is
+why `Visual` stores the spec alongside the file path.
+
+Diagram kinds, chosen to match what this account actually writes about:
+
+| Kind | For |
+|---|---|
+| `chain` | Reductions: computation to R1CS to polynomial to one evaluation |
+| `flow` | Protocols with branching, rounds, or a prover and verifier exchange |
+| `comparison` | Two systems side by side, such as Groth16 against Spartan |
+| `timeline` | Sequences of rounds, or an incident unfolding |
+| `plot` | Actual data, when there is any |
+
 ### Scheduler
 
 Assigns each approved draft a date and time across the coming week, spread

@@ -7,12 +7,33 @@ the first thing worth checking when something behaves unexpectedly.
 
 from __future__ import annotations
 
+from pathlib import Path
+from typing import Annotated
+
 import typer
 from rich.console import Console
 from rich.table import Table
+from sqlmodel import func, select
 
 from contentsys import __version__
 from contentsys.config import Platform, get_settings
+from contentsys.db import create_all, session_scope
+from contentsys.db.models import (
+    Experience,
+    KnowledgeItem,
+    Opinion,
+    SampleSource,
+    Topic,
+    WritingSample,
+)
+from contentsys.knowledge import import_samples, load_seed
+from contentsys.voice import (
+    MIN_USEFUL_SAMPLES,
+    active_profile,
+    build_profile,
+    load_surface,
+    samples_for,
+)
 
 app = typer.Typer(
     name="contentsys",
@@ -82,6 +103,172 @@ def show_config() -> None:
         )
         weekly.add_row(platform.value, str(plan.weekly_total()), summary)
     console.print(weekly)
+
+
+@app.command("init")
+def init_db() -> None:
+    """Create the database and its tables."""
+    create_all()
+    console.print(f"[green]Ready.[/green] Database at {get_settings().database_url}")
+
+
+@app.command("seed")
+def seed() -> None:
+    """Load the starting knowledge base from seed/.
+
+    Safe to run more than once. Anything already present is left alone rather
+    than duplicated, because duplicates quietly bias the voice measurement.
+    """
+    create_all()
+    with session_scope() as session:
+        reports = load_seed(session)
+
+    table = Table(title="Seed loaded")
+    table.add_column("Kind")
+    table.add_column("Result")
+    for kind, report in reports.items():
+        table.add_row(kind, report.describe())
+    console.print(table)
+    console.print("\nNext: [cyan]contentsys voice build[/cyan]")
+
+
+@app.command("import-samples")
+def import_samples_command(
+    path: Annotated[Path, typer.Argument(help="A .txt, .md, .csv or .json export")],
+    source: Annotated[
+        SampleSource, typer.Option("--source", "-s", help="Where the writing came from")
+    ] = SampleSource.X,
+) -> None:
+    """Import your own writing.
+
+    Everything here is ground truth for the voice engine, so only your words
+    belong in it. Duplicates are detected by content, which means re-importing
+    an overlapping export is harmless.
+    """
+    if not path.exists():
+        console.print(f"[red]No such file:[/red] {path}")
+        raise typer.Exit(1)
+
+    create_all()
+    with session_scope() as session:
+        report = import_samples(session, path, source)
+
+    console.print(f"[green]{source.value}:[/green] {report.describe()}")
+    if report.added:
+        console.print("\nNext: [cyan]contentsys voice build[/cyan]")
+
+
+voice_app = typer.Typer(help="Inspect and rebuild the voice profile.", no_args_is_help=True)
+app.add_typer(voice_app, name="voice")
+
+
+@voice_app.command("build")
+def voice_build() -> None:
+    """Measure your writing and store a new voice profile."""
+    create_all()
+    with session_scope() as session:
+        for platform in Platform:
+            profile, surface = build_profile(session, platform)
+            header = f"{platform.value}: version {profile.version}, {profile.sample_count} samples"
+            if profile.sample_count == 0:
+                console.print(f"[yellow]{header}. Nothing to measure yet.[/yellow]")
+                continue
+            colour = "green" if profile.sample_count >= MIN_USEFUL_SAMPLES else "yellow"
+            console.print(f"[{colour}]{header}[/{colour}]")
+            for line in surface.describe():
+                console.print(f"  {line}")
+            if profile.sample_count < MIN_USEFUL_SAMPLES:
+                console.print(
+                    f"  [yellow]Under {MIN_USEFUL_SAMPLES} samples, so treat these numbers as "
+                    "provisional. More writing sharpens them fast.[/yellow]"
+                )
+            console.print()
+
+
+@voice_app.command("show")
+def voice_show(
+    platform: Annotated[Platform, typer.Argument(help="X or LinkedIn")] = Platform.X,
+) -> None:
+    """Show the stored voice profile for a platform."""
+    with session_scope() as session:
+        profile = active_profile(session, platform)
+        if profile is None:
+            console.print("[yellow]No profile yet. Run 'contentsys voice build'.[/yellow]")
+            raise typer.Exit(1)
+        surface = load_surface(profile)
+        count = profile.sample_count
+        version = profile.version
+
+    console.print(f"[bold]{platform.value}[/bold]  version {version}, {count} samples\n")
+    for line in surface.describe():
+        console.print(f"  {line}")
+
+    table = Table(title="\nMeasurements", show_header=True)
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    for key, value in surface.to_dict().items():
+        if isinstance(value, list):
+            value = ", ".join(str(item) for item in value[:10]) or "none"
+        table.add_row(key.replace("_", " "), str(value))
+    console.print(table)
+
+
+@app.command("knowledge")
+def knowledge_summary() -> None:
+    """Show what the system knows about you.
+
+    Worth checking before the first generation run: content quality is capped
+    by what is in here, and an empty knowledge base produces generic posts no
+    matter how good the prompts are.
+    """
+    with session_scope() as session:
+        counts = {
+            "writing samples": session.exec(select(func.count()).select_from(WritingSample)).one(),
+            "experiences": session.exec(select(func.count()).select_from(Experience)).one(),
+            "opinions": session.exec(select(func.count()).select_from(Opinion)).one(),
+            "knowledge items": session.exec(select(func.count()).select_from(KnowledgeItem)).one(),
+            "topics": session.exec(select(func.count()).select_from(Topic)).one(),
+        }
+        usable = sum(
+            1
+            for experience in session.exec(select(Experience))
+            if experience.is_usable_for_first_person
+        )
+        deep = list(
+            session.exec(
+                select(KnowledgeItem).where(KnowledgeItem.depth.in_(["deep", "working"]))  # type: ignore[attr-defined]
+            )
+        )
+        per_platform = {platform: len(samples_for(session, platform)) for platform in Platform}
+        deep_concepts = [item.concept for item in deep]
+
+    table = Table(title="Knowledge base")
+    table.add_column("Kind")
+    table.add_column("Count", justify="right")
+    for label, value in counts.items():
+        table.add_row(label, str(value))
+    console.print(table)
+
+    console.print(
+        f"\n[bold]{usable}[/bold] experiences are confirmed and usable for first person claims."
+    )
+    if usable < counts["experiences"]:
+        console.print(
+            f"[yellow]{counts['experiences'] - usable} are unconfirmed and cannot back a "
+            "personal post until you confirm them.[/yellow]"
+        )
+
+    console.print("\nUsable samples per platform:")
+    for platform, count in per_platform.items():
+        marker = "green" if count >= MIN_USEFUL_SAMPLES else "yellow"
+        console.print(f"  [{marker}]{platform.value}: {count}[/{marker}]")
+
+    if deep_concepts:
+        console.print(
+            f"\nCan write with authority on {len(deep_concepts)} concepts: "
+            + ", ".join(sorted(deep_concepts)[:12])
+            + ("..." if len(deep_concepts) > 12 else "")
+        )
 
 
 if __name__ == "__main__":
