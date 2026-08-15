@@ -95,6 +95,39 @@ x:
     published_at: 2026-08-05
     topic: personal reflection
 
+  # Pulled live from the profile on 2026-08-15. These matter more than their
+  # count suggests: the first batch above was a filtered view that happened to
+  # contain no emoji, which produced a voice profile asserting this account
+  # never uses them. It does, constantly. Measuring a biased sample and
+  # believing the result is the exact failure this whole layer exists to avoid.
+  - content: |-
+      code, mathematics and manifestations💜💌
+      that's the vibe<3
+    published_at: 2025-04-28
+    topic: personal reflection
+    impressions: 88000
+    likes: 463
+    replies: 41
+
+  - content: "the moment you feel you are getting somewhere, they change the rules 🥲🙂"
+    published_at: 2026-08-15
+    topic: internet culture
+    impressions: 200
+    likes: 7
+
+  - content: |-
+      guys drop advice to help me get my account monetised. i need to hit 5M impressions, and that's where I am stuck😭
+    published_at: 2026-08-15
+    topic: internet culture
+    impressions: 998
+    likes: 13
+
+  - content: "good morning 💜"
+    published_at: 2026-08-15
+    topic: personal reflection
+    impressions: 111
+    likes: 6
+
   # Kept for the record, excluded from voice measurement: no style signal.
   - {content: "maybe", published_at: 2026-08-10, exclude: true, exclusion_reason: one word reply}
   - {content: "lets go!", published_at: 2026-07-25, exclude: true, exclusion_reason: reply to a quoted post}

@@ -127,8 +127,17 @@ class SurfaceProfile:
         lines.append(f"About {self.mean_sentences_per_post:.1f} sentences per post.")
         if self.question_ratio >= 0.1:
             lines.append(f"Asks a real question in {self.question_ratio:.0%} of posts.")
+        # Report the habit in both directions. Only mentioning the absence of
+        # emoji meant a profile could silently go from "never uses emoji" to
+        # saying nothing at all, which reads as agreement rather than as a
+        # measurement that changed.
         if self.emoji_ratio < 0.05:
             lines.append("Essentially never uses emoji.")
+        else:
+            lines.append(
+                f"Uses emoji in {self.emoji_ratio:.0%} of posts, so stripping them out "
+                "would read as a different person."
+            )
         if self.contraction_per_100_words >= 3:
             lines.append(
                 f"Uses contractions freely ({self.contraction_per_100_words:.1f} per 100 words), "

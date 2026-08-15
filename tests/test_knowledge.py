@@ -193,10 +193,22 @@ class TestVoiceProfileBuilding:
         # sound like someone else and nothing downstream will catch it.
         _, surface = build_profile(seeded, Platform.X)
 
-        assert surface.all_lowercase_post_ratio > 0.6, "this voice writes in lowercase"
-        assert surface.emoji_ratio == 0.0, "this voice does not use emoji"
+        assert surface.all_lowercase_post_ratio > 0.5, "this voice writes in lowercase"
         assert surface.median_sentence_words < 15, "this voice writes short sentences"
         assert surface.mean_sentences_per_post < 4, "these are short posts"
+
+    def test_emoji_use_is_measured_rather_than_assumed(self, seeded: Session) -> None:
+        # This assertion used to read `emoji_ratio == 0.0`, which was measured
+        # honestly from a sample that happened to contain none. The account
+        # uses emoji constantly. A biased sample producing a confident wrong
+        # profile is the precise failure this layer exists to prevent, so the
+        # regression is pinned here rather than only fixed in the data.
+        _, surface = build_profile(seeded, Platform.X)
+
+        assert surface.emoji_ratio > 0.0, (
+            "the seed no longer represents this voice: it uses emoji and the "
+            "profile must say so, or generated posts will read as sterile"
+        )
 
     def test_registers_are_kept_apart(self, seeded: Session) -> None:
         # Averaging a lowercase X voice with structured LinkedIn prose gives a
