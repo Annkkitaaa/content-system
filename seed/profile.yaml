@@ -128,6 +128,17 @@ experiences:
     confidence: stated
     tags: [milestone]
 
+  - summary: Actively working toward X monetization, stuck on the impression gate
+    detail: >-
+      Around 3,895 followers and roughly 20,000 posts as of August 2026. Asked
+      publicly for advice on reaching the impression threshold. Best performing
+      post to date is the pinned one, "code, mathematics and manifestations",
+      at roughly 88,000 views: a short personal post, not a technical one.
+    evidence: "X profile and posts, 15 Aug 2026"
+    evidence_url: https://x.com/annkkitaaa
+    confidence: stated
+    tags: [platform, monetization, current]
+
   # Drawn from a local working directory rather than a public statement, so
   # it is marked inferred until confirmed. Not usable for first-person
   # content while it stays inferred.
@@ -205,6 +216,26 @@ opinions:
     topic: platform
     strength: held
     evidence: "X post, 25 July"
+    confidence: stated
+
+  - statement: >-
+      Replies do not count toward monetizable impressions, but you still have
+      to reply to people to stay visible, because without it you barely show up
+      on the timeline and your impressions suffer anyway.
+    reasoning: >-
+      A real tension in the program design rather than a complaint. She is
+      correct: the eligibility impression count explicitly excludes replies,
+      while the ranking model weights reply depth heavily for distribution.
+    topic: platform
+    strength: held
+    evidence: "X post, 15 Aug"
+    confidence: stated
+
+  - statement: >-
+      The moment you feel you are getting somewhere, they change the rules.
+    topic: platform
+    strength: held
+    evidence: "X post, 15 Aug, on the monetization program changing"
     confidence: stated
 
   - statement: >-

@@ -123,6 +123,17 @@ class TestSocialMechanics:
     def test_detects_emoji_when_present(self) -> None:
         assert analyse(["shipping this 🚀"]).emoji_ratio == 1.0
 
+    def test_describe_reports_emoji_use_in_both_directions(self) -> None:
+        # Only reporting the absence meant a profile could go from asserting
+        # "never uses emoji" to saying nothing, which reads as agreement
+        # rather than as a measurement that changed.
+        without = " ".join(analyse(["plain text", "more plain text"]).describe())
+        with_emoji = " ".join(analyse(["good morning 💜", "the vibe 💜💌"]).describe())
+
+        assert "never uses emoji" in without
+        assert "emoji" in with_emoji
+        assert "never uses emoji" not in with_emoji
+
     def test_counts_hashtags_and_mentions(self) -> None:
         profile = analyse(["thanks @nethermind #zk", "no tags here"])
 
